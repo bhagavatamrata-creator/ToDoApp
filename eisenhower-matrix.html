@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Focus Matrix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --do-color: #e8655a;
+    --do-bg: #fff5f4;
+    --do-border: #f5c5c2;
+    --sched-color: #4a90d9;
+    --sched-bg: #f2f7fd;
+    --sched-border: #bcd6f0;
+    --del-color: #e8a23a;
+    --del-bg: #fdf8f0;
+    --del-border: #f0d9a8;
+    --drop-color: #7e7e8a;
+    --drop-bg: #f7f7f9;
+    --drop-border: #d4d4dc;
+    --text: #1a1a2e;
+    --text-muted: #9090a0;
+    --radius: 16px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --shadow-hover: 0 6px 24px rgba(0,0,0,0.1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f0eff4;
+    min-height: 100vh;
+    color: var(--text);
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px 14px;
+    background: #fff;
+    border-bottom: 1px solid #ebebf0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .logo span { color: var(--do-color); font-style: italic; }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .btn-add-main {
+    background: var(--text);
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    padding: 8px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn-add-main:hover { background: #2d2d42; transform: translateY(-1px); }
+  .btn-add-main:active { transform: translateY(0); }
+
+  .btn-clear {
+    background: none;
+    border: 1px solid #e0e0e8;
+    border-radius: 30px;
+    padding: 7px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .btn-clear:hover { border-color: var(--do-color); color: var(--do-color); }
+
+  /* ── Matrix Grid ── */
+  .matrix {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 12px;
+    padding: 12px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 640px) {
+    .matrix {
+      grid-template-columns: 1fr;
+      padding: 8px;
+      gap: 8px;
+    }
+  }
+
+  /* ── Quadrant ── */
+  .quadrant {
+    background: #fff;
+    border-radius: var(--radius);
+    border: 1.5px solid #e8e8f0;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s;
+  }
+  .quadrant:hover { box-shadow: var(--shadow-hover); }
+
+  .q-header {
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid #f0f0f4;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .q-title-block {}
+
+  .q-accent {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-bottom: 4px;
+  }
+
+  .q-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .q-sub {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .q-count {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+    margin-top: 2px;
+  }
+
+  .q-add-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+    margin-top: 2px;
+  }
+  .q-add-btn:hover { background: #f4f4f8; color: var(--text); }
+
+  .q-tasks {
+    padding: 10px 12px;
+    flex: 1;
+    position: relative;
+  }
+
+  /* ── Ghost tasks ── */
+  .ghost-tasks {
+    position: absolute;
+    inset: 10px 12px;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  .ghost-tasks.hidden { opacity: 0; pointer-events: none; }
+
+  .ghost-task {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    margin-bottom: 5px;
+    border-radius: 10px;
+    opacity: 0.35;
+  }
+  .ghost-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid currentColor; flex-shrink: 0; }
+  .ghost-text { font-size: 0.82rem; font-weight: 300; font-style: italic; }
+
+  /* ── Real tasks ── */
+  .tasks-list {}
+
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    border-radius: 10px;
+    background: #fafafa;
+    border: 1px solid #f0f0f4;
+    position: relative;
+    transition: opacity 0.25s, transform 0.25s, border-color 0.15s;
+    touch-action: pan-y;
+    animation: taskIn 0.2s ease;
+  }
+  @keyframes taskIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .task-item:hover { border-color: #d8d8e8; }
+  .task-item.completed { opacity: 0.45; }
+  .task-item.swiping-left { transform: translateX(-60px); opacity: 0.5; }
+  .task-item.swiping-right { transform: translateX(40px); opacity: 0.7; }
+
+  .task-check {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1.5px solid #ccc;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s, background 0.15s;
+    background: transparent;
+  }
+  .task-check:hover { border-color: #999; }
+  .task-check.done { background: currentColor; border-color: currentColor; }
+  .task-check.done::after { content: '✓'; color: #fff; font-size: 9px; font-weight: 700; }
+
+  .task-text {
+    flex: 1;
+    font-size: 0.85rem;
+    line-height: 1.35;
+    cursor: text;
+    outline: none;
+    background: transparent;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    word-break: break-word;
+  }
+  .task-text:focus { color: var(--text); }
+
+  .task-date {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .task-del {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #ccc;
+    font-size: 14px;
+    padding: 0 2px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.15s;
+    display: none;
+  }
+  .task-item:hover .task-del { display: block; }
+  .task-del:hover { color: #e55; }
+
+  .q-add-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    margin-bottom: 5px;
+    border-radius: 10px;
+    background: #f8f8fb;
+    border: 1.5px dashed #d8d8e8;
+    animation: taskIn 0.15s ease;
+  }
+  .q-add-inline input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text);
+    outline: none;
+  }
+  .q-add-inline input::placeholder { color: #bbb; }
+  .q-add-inline .add-confirm {
+    background: var(--text);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .q-add-inline .add-cancel {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+
+  /* Quadrant color theming */
+  .q-do .q-accent { background: var(--do-color); }
+  .q-do .q-title { color: var(--do-color); }
+  .q-do .q-count { background: var(--do-bg); color: var(--do-color); }
+  .q-do .task-check { border-color: var(--do-border); color: var(--do-color); }
+  .q-do .task-check:hover { border-color: var(--do-color); }
+  .q-do .ghost-task { color: var(--do-color); }
+
+  .q-sched .q-accent { background: var(--sched-color); }
+  .q-sched .q-title { color: var(--sched-color); }
+  .q-sched .q-count { background: var(--sched-bg); color: var(--sched-color); }
+  .q-sched .task-check { border-color: var(--sched-border); color: var(--sched-color); }
+  .q-sched .task-check:hover { border-color: var(--sched-color); }
+  .q-sched .ghost-task { color: var(--sched-color); }
+
+  .q-del .q-accent { background: var(--del-color); }
+  .q-del .q-title { color: var(--del-color); }
+  .q-del .q-count { background: var(--del-bg); color: var(--del-color); }
+  .q-del .task-check { border-color: var(--del-border); color: var(--del-color); }
+  .q-del .task-check:hover { border-color: var(--del-color); }
+  .q-del .ghost-task { color: var(--del-color); }
+
+  .q-drop .q-accent { background: var(--drop-color); }
+  .q-drop .q-title { color: var(--drop-color); }
+  .q-drop .q-count { background: var(--drop-bg); color: var(--drop-color); }
+  .q-drop .task-check { border-color: var(--drop-border); color: var(--drop-color); }
+  .q-drop .task-check:hover { border-color: var(--drop-color); }
+  .q-drop .ghost-task { color: var(--drop-color); }
+
+  /* ── Modal Overlay ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,20,0.45);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: #fff;
+    border-radius: 20px;
+    padding: 28px 28px 24px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+    transform: translateY(12px) scale(0.98);
+    transition: transform 0.2s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+  .modal h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .modal p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .modal-task-input {
+    width: 100%;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 12px;
+    padding: 11px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+    margin-bottom: 20px;
+  }
+  .modal-task-input:focus { border-color: #a0a0c0; }
+  .modal-task-input::placeholder { color: #bbb; }
+
+  .modal-questions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .q-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .q-question label {
+    font-size: 0.88rem;
+    font-weight: 400;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .toggle-group {
+    display: flex;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1.5px solid #e0e0e8;
+    flex-shrink: 0;
+  }
+  .toggle-btn {
+    border: none;
+    background: #fafafa;
+    padding: 7px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    color: var(--text-muted);
+  }
+  .toggle-btn + .toggle-btn { border-left: 1.5px solid #e0e0e8; }
+  .toggle-btn.active-yes { background: #1a1a2e; color: #fff; }
+  .toggle-btn.active-no  { background: #f0f0f4; color: var(--text); }
+
+  .modal-destination {
+    background: #f8f8fb;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+    min-height: 46px;
+  }
+  .dest-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dest-label { font-weight: 500; }
+  .dest-sub { color: var(--text-muted); font-size: 0.78rem; margin-left: auto; }
+
+  .modal-footer {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .btn-cancel-modal {
+    background: none;
+    border: 1.5px solid #e0e0e8;
+    border-radius: 10px;
+    padding: 9px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .btn-cancel-modal:hover { border-color: #bbb; color: var(--text); }
+
+  .btn-confirm-modal {
+    background: var(--text);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 22px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn-confirm-modal:hover { background: #2d2d42; transform: translateY(-1px); }
+  .btn-confirm-modal:disabled { opacity: 0.4; pointer-events: none; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1a1a2e;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 30px;
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    transition: opacity 0.25s, transform 0.25s;
+    z-index: 300;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: all; }
+  .toast-undo {
+    background: none;
+    border: none;
+    color: #f0c060;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+  }
+
+  /* ── Axis labels ── */
+  .axis-labels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 6px 12px 0;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .axis-label {
+    text-align: center;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 500;
+    padding: 4px 0;
+  }
+  .axis-label-v {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    writing-mode: vertical-lr;
+    transform: translateY(-50%) rotate(180deg);
+    font-size: 0.6rem;
+    color: #ccc;
+    height: 200px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 640px) {
+    .axis-labels { display: none; }
+    header { padding: 14px 16px 12px; }
+    .logo { font-size: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Focus<span>Matrix</span></div>
+  <div class="header-actions">
+    <button class="btn-clear" onclick="confirmClear()">Clear done</button>
+    <button class="btn-add-main" onclick="openModal()">
+      <span style="font-size:1.1rem;line-height:1">+</span> Add Task
+    </button>
+  </div>
+</header>
+
+<div class="axis-labels">
+  <div class="axis-label">🔴 Urgent</div>
+  <div class="axis-label">⚪ Not Urgent</div>
+</div>
+
+<div class="matrix">
+
+  <!-- DO NOW -->
+  <div class="quadrant q-do">
+    <div class="q-header">
+      <div class="q-title-block">
+        <div class="q-accent"></div>
+        <div class="q-title">Do Now</div>
+        <div class="q-sub">Urgent + Important</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="q-count" id="count-do">0</span>
+        <button class="q-add-btn" title="Add task" onclick="openModalFor('do')">+</button>
+      </div>
+    </div>
+    <div class="q-tasks">
+      <div class="ghost-tasks" id="ghost-do">
+        <div class="ghost-task"><div class="ghost-dot"></div><span class="ghost-text">Fix production bug</span></div>
+        <div class="ghost-task"><div class="ghost-dot"></div><span class="ghost-text">Pay overdue bill</span></div>
+        <div class="ghost-task"><div class="ghost-dot"></div><span class="ghost-text">Doctor appointment today</span></div>
+      </div>
+      <div class="tasks-list" id="tasks-do"></div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <div class="quadrant q-sched">
+    <div class="q-header">
+      <div class="q-title-block">
+        <div class="q-accent"></div>
+        <div class="q-title">Schedule</div>
+        <div class="q-sub">Important, not urgent</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="q-count" id="count-sched">0</span>
+        <button class="q-add-btn" title="Add task" onclick="openModalFor('sched')">+</button>
+      </div>
+    </div>
+    <div class="q-tasks">
+      <div class="ghost-tasks" id="ghost-sched">
+        <div class="ghost-task"><div class="ghost-dot"></div><span class="ghost-text">Start weekly exercise</span></div>
+        <div class="ghost-task"><div class="ghost-dot"></div><span class="ghost-text">Learn a new skill</span></div>
+        <div class="ghost-task"><div class="ghost-dot"></div><span class="ghost-text">Plan Q3 goals</span></div>
+      </div>
+      <div class="tasks-list" id="tasks-sched"></div>
+    </div>
+  </div>
+
+  <!-- DELEGATE -->
+  <div class="quadrant q-del">
+    <div class="q-header">
+      <div class="q-title-block">
+        <div class="q-accent"></div>
+        <div class="q-title">Delegate</div>
+        <div class="q-sub">Urgent, not important</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="q-count" id="count-del">0</span>
+        <button class="q-add-btn" title="Add task" onclick="openModalFor('del')">+</button>
+      </div>
+    </div>
+    <div class="q-tasks">
+      <div class="ghost-tasks" id="ghost-del">
+        <div class="ghost-task"><div class="ghost-dot"></div><span class="ghost-text">Book travel tickets</span></div>
+        <div class="ghost-task"><div class="ghost-dot"></div><span class="ghost-text">Reply to routine emails</span></div>
+        <div class="ghost-task"><div class="ghost-dot"></div><span class="ghost-text">Arrange team meeting</span></div>
+      </div>
+      <div class="tasks-list" id="tasks-del"></div>
+    </div>
+  </div>
+
+  <!-- DROP -->
+  <div class="quadrant q-drop">
+    <div class="q-header">
+      <div class="q-title-block">
+        <div class="q-accent"></div>
+        <div class="q-title">Drop</div>
+        <div class="q-sub">Not urgent, not important</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="q-count" id="count-drop">0</span>
+        <button class="q-add-btn" title="Add task" onclick="openModalFor('drop')">+</button>
+      </div>
+    </div>
+    <div class="q-tasks">
+      <div class="ghost-tasks" id="ghost-drop">
+        <div class="ghost-task"><div class="ghost-dot"></div><span class="ghost-text">Endless scrolling</span></div>
+        <div class="ghost-task"><div class="ghost-dot"></div><span class="ghost-text">Low-value meetings</span></div>
+        <div class="ghost-task"><div class="ghost-dot"></div><span class="ghost-text">Random browsing</span></div>
+      </div>
+      <div class="tasks-list" id="tasks-drop"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal-overlay" id="modal" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <h2>Add a task</h2>
+    <p>Answer two quick questions and it'll land in the right spot.</p>
+    <input class="modal-task-input" id="task-input" placeholder="What needs to get done?" maxlength="120" />
+    <div class="modal-questions">
+      <div class="q-question">
+        <label>Is it <strong>urgent</strong>? (deadline or pressure now)</label>
+        <div class="toggle-group">
+          <button class="toggle-btn" id="btn-urgent-yes" onclick="setUrgent(true)">Yes</button>
+          <button class="toggle-btn" id="btn-urgent-no"  onclick="setUrgent(false)">No</button>
+        </div>
+      </div>
+      <div class="q-question">
+        <label>Is it <strong>important</strong>? (high impact, matters to you)</label>
+        <div class="toggle-group">
+          <button class="toggle-btn" id="btn-imp-yes" onclick="setImportant(true)">Yes</button>
+          <button class="toggle-btn" id="btn-imp-no"  onclick="setImportant(false)">No</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-destination" id="dest-preview">
+      <div class="dest-dot" id="dest-dot"></div>
+      <span class="dest-label" id="dest-label">Answer above to see destination</span>
+      <span class="dest-sub" id="dest-sub"></span>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel-modal" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm-modal" id="btn-confirm" onclick="confirmAdd()" disabled>Add Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span id="toast-msg">Task deleted</span>
+  <button class="toast-undo" onclick="undoDelete()">Undo</button>
+</div>
+
+<script>
+// ── State ──
+let tasks = {};
+let undoStack = null;
+let toastTimer = null;
+let forcedQ = null; // quadrant pre-selected
+
+const QUADRANTS = {
+  do:    { label: 'Do Now',   sub: 'Urgent + Important',      color: '#e8655a', bg: '#fff5f4' },
+  sched: { label: 'Schedule', sub: 'Important, not urgent',   color: '#4a90d9', bg: '#f2f7fd' },
+  del:   { label: 'Delegate', sub: 'Urgent, not important',   color: '#e8a23a', bg: '#fdf8f0' },
+  drop:  { label: 'Drop',     sub: 'Not urgent, not important',color: '#7e7e8a', bg: '#f7f7f9' }
+};
+
+// ── Persist ──
+function save() {
+  localStorage.setItem('fm_tasks', JSON.stringify(tasks));
+}
+function load() {
+  try {
+    tasks = JSON.parse(localStorage.getItem('fm_tasks') || '{}');
+    ['do','sched','del','drop'].forEach(q => { if (!tasks[q]) tasks[q] = []; });
+  } catch { tasks = { do:[], sched:[], del:[], drop:[] }; }
+}
+
+// ── Render ──
+function render() {
+  ['do','sched','del','drop'].forEach(q => {
+    const list = document.getElementById('tasks-' + q);
+    const ghost = document.getElementById('ghost-' + q);
+    const count = document.getElementById('count-' + q);
+    list.innerHTML = '';
+    const arr = tasks[q] || [];
+    count.textContent = arr.filter(t => !t.done).length || arr.length ? arr.length : 0;
+    count.textContent = arr.length;
+    if (arr.length > 0) ghost.classList.add('hidden');
+    else ghost.classList.remove('hidden');
+    arr.forEach((task, i) => {
+      const el = document.createElement('div');
+      el.className = 'task-item' + (task.done ? ' completed' : '');
+      el.dataset.id = task.id;
+      el.dataset.q = q;
+      el.innerHTML = `
+        <div class="task-check${task.done ? ' done' : ''}" onclick="toggleDone('${q}',${i})"></div>
+        <div class="task-text" contenteditable="true"
+          onblur="editTask('${q}',${i},this.innerText)"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+        >${escHtml(task.text)}</div>
+        ${task.date ? `<span class="task-date">${task.date}</span>` : ''}
+        <button class="task-del" onclick="deleteTask('${q}',${i})">×</button>
+      `;
+      // Swipe support
+      addSwipe(el, q, i);
+      list.appendChild(el);
+    });
+  });
+  save();
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Swipe ──
+function addSwipe(el, q, i) {
+  let startX = 0, startY = 0, dx = 0;
+  el.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    dx = 0;
+  }, {passive:true});
+  el.addEventListener('touchmove', e => {
+    dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if (Math.abs(dy) > Math.abs(dx)) return;
+    if (dx < -20) el.classList.add('swiping-left');
+    else el.classList.remove('swiping-left');
+    if (dx > 20) el.classList.add('swiping-right');
+    else el.classList.remove('swiping-right');
+  }, {passive:true});
+  el.addEventListener('touchend', () => {
+    if (dx < -60) deleteTask(q, i);
+    else if (dx > 60) showMoveMenu(q, i);
+    el.classList.remove('swiping-left','swiping-right');
+  });
+}
+
+// ── Actions ──
+function toggleDone(q, i) {
+  tasks[q][i].done = !tasks[q][i].done;
+  render();
+}
+
+function editTask(q, i, text) {
+  const t = text.trim();
+  if (!t) { deleteTask(q, i); return; }
+  tasks[q][i].text = t;
+  save();
+}
+
+function deleteTask(q, i) {
+  const deleted = tasks[q].splice(i, 1)[0];
+  undoStack = { q, i, task: deleted };
+  showToast('Task removed');
+  render();
+}
+
+function showMoveMenu(q, i) {
+  const opts = Object.entries(QUADRANTS).filter(([k]) => k !== q);
+  const labels = opts.map(([k,v]) => `${v.label}`).join(' / ');
+  // Simple: cycle to next quadrant
+  const qs = ['do','sched','del','drop'];
+  const next = qs[(qs.indexOf(q) + 1) % 4];
+  const task = tasks[q].splice(i, 1)[0];
+  tasks[next].push(task);
+  showToast(`Moved to ${QUADRANTS[next].label}`);
+  render();
+}
+
+function undoDelete() {
+  if (!undoStack) return;
+  const { q, i, task } = undoStack;
+  tasks[q].splice(i, 0, task);
+  undoStack = null;
+  hideToast();
+  render();
+}
+
+function confirmClear() {
+  ['do','sched','del','drop'].forEach(q => {
+    tasks[q] = tasks[q].filter(t => !t.done);
+  });
+  showToast('Completed tasks cleared ✓', false);
+  render();
+}
+
+// ── Toast ──
+function showToast(msg, withUndo = true) {
+  const t = document.getElementById('toast');
+  const m = document.getElementById('toast-msg');
+  const u = t.querySelector('.toast-undo');
+  m.textContent = msg;
+  u.style.display = withUndo ? 'inline' : 'none';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, 3200);
+}
+function hideToast() {
+  document.getElementById('toast').classList.remove('show');
+}
+
+// ── Modal ──
+let urgentVal = null, impVal = null;
+
+function openModal(forceQ) {
+  forcedQ = forceQ || null;
+  urgentVal = null; impVal = null;
+  document.getElementById('task-input').value = '';
+  document.getElementById('btn-confirm').disabled = true;
+  ['btn-urgent-yes','btn-urgent-no','btn-imp-yes','btn-imp-no'].forEach(id => {
+    document.getElementById(id).className = 'toggle-btn';
+  });
+  updateDest();
+  document.getElementById('modal').classList.add('open');
+  setTimeout(() => document.getElementById('task-input').focus(), 200);
+
+  if (forcedQ) {
+    const m = { do:[true,true], sched:[false,true], del:[true,false], drop:[false,false] };
+    const [u,imp] = m[forcedQ];
+    setUrgent(u); setImportant(imp);
+  }
+}
+
+function openModalFor(q) { openModal(q); }
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  forcedQ = null;
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal')) closeModal();
+}
+
+function setUrgent(val) {
+  urgentVal = val;
+  document.getElementById('btn-urgent-yes').className = 'toggle-btn' + (val ? ' active-yes' : '');
+  document.getElementById('btn-urgent-no').className  = 'toggle-btn' + (!val ? ' active-no' : '');
+  updateDest();
+}
+
+function setImportant(val) {
+  impVal = val;
+  document.getElementById('btn-imp-yes').className = 'toggle-btn' + (val ? ' active-yes' : '');
+  document.getElementById('btn-imp-no').className  = 'toggle-btn' + (!val ? ' active-no' : '');
+  updateDest();
+}
+
+function getQuadrant() {
+  if (urgentVal === null || impVal === null) return null;
+  if (urgentVal && impVal)   return 'do';
+  if (!urgentVal && impVal)  return 'sched';
+  if (urgentVal && !impVal)  return 'del';
+  return 'drop';
+}
+
+function updateDest() {
+  const q = getQuadrant();
+  const dot = document.getElementById('dest-dot');
+  const label = document.getElementById('dest-label');
+  const sub = document.getElementById('dest-sub');
+  const preview = document.getElementById('dest-preview');
+  const btn = document.getElementById('btn-confirm');
+
+  if (!q) {
+    dot.style.background = '#e0e0e8';
+    label.textContent = 'Answer both questions above';
+    sub.textContent = '';
+    preview.style.background = '#f8f8fb';
+    btn.disabled = true;
+  } else {
+    const info = QUADRANTS[q];
+    dot.style.background = info.color;
+    label.textContent = '→ ' + info.label;
+    sub.textContent = info.sub;
+    preview.style.background = info.bg;
+    btn.disabled = !document.getElementById('task-input').value.trim();
+  }
+}
+
+function confirmAdd() {
+  const text = document.getElementById('task-input').value.trim();
+  if (!text) return;
+  const q = getQuadrant();
+  if (!q) return;
+  const task = { id: Date.now(), text, done: false, date: '' };
+  tasks[q].unshift(task);
+  render();
+  closeModal();
+  // Flash the quadrant
+  const qEl = document.querySelector('.q-' + q);
+  qEl.style.transform = 'scale(1.012)';
+  setTimeout(() => qEl.style.transform = '', 200);
+}
+
+// Enter key in modal
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('task-input').addEventListener('input', () => {
+    const q = getQuadrant();
+    document.getElementById('btn-confirm').disabled = !(q && document.getElementById('task-input').value.trim());
+  });
+  document.getElementById('task-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { confirmAdd(); }
+    if (e.key === 'Escape') closeModal();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openModal(); }
+  });
+
+  load();
+  render();
+});
+</script>
+</body>
+</html>
