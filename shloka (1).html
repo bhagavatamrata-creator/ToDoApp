@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Shloka — Sacred Memory Practice</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#FAF3E8;font-family:Georgia,serif;min-height:100vh}
+input,textarea,button{font-family:Georgia,serif}
+.view{display:none;flex-direction:column;min-height:100vh;max-width:480px;margin:0 auto}
+.view.active{display:flex}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(196,98,26,0.25)}50%{box-shadow:0 0 0 8px rgba(196,98,26,0)}}
+.anim{animation:fi .35s ease}
+.bar{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 8px;flex-shrink:0}
+.bar button{background:none;border:none;cursor:pointer;color:#8B7355;font-size:18px;font-family:Georgia,serif}
+.bar .bar-title{font-size:14px;font-weight:700;color:#2A1F0E}
+.bar .bar-action{font-size:12px;color:#C4621A;font-style:italic}
+.scroll{flex:1;overflow-y:auto;padding:10px 16px 16px}
+.cta{padding:10px 16px 32px;flex-shrink:0;display:flex;flex-direction:column;gap:8px}
+.card{background:#FFFDF8;border:1px solid rgba(196,98,26,0.15);border-radius:14px;padding:18px 16px;margin-bottom:12px;box-shadow:0 2px 12px rgba(42,31,14,0.05)}
+.card-accent{background:#FFFDF8;border:1px solid rgba(196,98,26,0.15);border-top:3px solid #C4621A;border-radius:14px;padding:18px 16px;margin-bottom:12px;box-shadow:0 2px 12px rgba(42,31,14,0.05)}
+.card-dark{background:#0D0B08;border:1px solid rgba(196,98,26,0.22);border-radius:16px;padding:22px 18px}
+.lbl{font-size:10px;letter-spacing:.14em;color:#C4621A;text-transform:uppercase;font-weight:700;margin-bottom:8px;display:block}
+.tr-text{font-style:italic;font-size:14px;line-height:2;color:#5C4A2A;text-align:center}
+.mn{font-size:14px;line-height:1.8;color:#5C4A2A}
+.hint{display:inline-block;background:rgba(196,98,26,0.07);color:#8B7355;font-size:11px;font-style:italic;padding:4px 10px;border-radius:20px;margin-bottom:10px;border:1px solid rgba(196,98,26,0.12)}
+.divline{height:1px;background:rgba(196,98,26,0.1);margin:10px 0}
+.btn-p{width:100%;padding:15px;background:#C4621A;color:#FFFDF8;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(196,98,26,0.28)}
+.btn-s{width:100%;padding:12px;background:transparent;color:#8B7355;border:1.5px solid rgba(139,115,85,0.3);border-radius:12px;font-size:14px;font-style:italic;cursor:pointer}
+.btn-outline{width:100%;padding:12px;background:transparent;color:#C4621A;border:1.5px solid rgba(196,98,26,0.4);border-radius:12px;font-size:14px;cursor:pointer}
+.btn-green{width:100%;padding:12px;background:transparent;color:#3a7a3a;border:1.5px solid rgba(91,158,91,0.5);border-radius:12px;font-size:14px;cursor:pointer}
+.inp{width:100%;background:#FFFDF8;border:1.5px solid rgba(196,98,26,0.2);border-radius:9px;padding:10px 12px;font-size:14px;color:#2A1F0E;outline:none}
+.steps-bar{display:flex;gap:3px;margin-bottom:6px}
+.steps-bar .seg{flex:1;height:3px;border-radius:2px;transition:background .4s}
+.mmask{cursor:pointer;color:transparent;background:rgba(196,98,26,0.08);border-radius:3px;padding:1px 6px;filter:blur(4px);transition:all .25s;user-select:none;font-size:13px;font-style:italic;display:inline-block}
+.mmask.shown{color:#5C4A2A;background:transparent;filter:none}
+.rhythm-line{font-style:italic;font-size:15px;line-height:2.2;margin-bottom:4px;padding:8px 12px;border-radius:10px;cursor:pointer;transition:all .5s ease;border:1.5px solid transparent;color:#8B7355}
+.rhythm-line.active{background:rgba(196,98,26,0.10);border-color:rgba(196,98,26,0.35);color:#2A1F0E;font-weight:700}
+.rhythm-line.past{color:rgba(92,74,42,0.45)}
+.tile{background:#2A1F0E;color:#D4A843;border:1px solid rgba(212,168,67,0.35);border-radius:8px;padding:6px 12px;font-size:13px;font-style:italic;cursor:pointer;user-select:none;display:inline-block}
+.placed-word{background:rgba(196,98,26,0.22);color:#FFFDF8;border-radius:6px;padding:3px 8px;font-size:13px;font-style:italic;display:inline-block;margin:2px}
+.dot{width:7px;height:7px;border-radius:50%;cursor:pointer;transition:all .2s;flex-shrink:0;display:inline-block}
+.opt-btn{background:#FAF3E8;border:1.5px solid rgba(196,98,26,0.2);border-radius:10px;padding:11px 16px;cursor:pointer;font-family:Georgia,serif;font-size:14px;font-style:italic;color:#5C4A2A;transition:all .2s;display:flex;align-items:center;gap:8px;width:100%;text-align:left}
+.opt-btn .circle{width:20px;height:20px;border-radius:50%;border:1.5px solid currentColor;display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.opt-btn.correct{background:rgba(91,158,91,0.12);border-color:#5a9e5a;color:#3a7a3a}
+.opt-btn.wrong{background:rgba(224,112,112,0.1);border-color:#e07070;color:#b05050}
+.mem-badge{font-size:9px;background:rgba(91,158,91,0.15);color:#3a7a3a;border-radius:4px;padding:1px 5px;font-weight:700;letter-spacing:.08em}
+.bd-word{cursor:pointer;border-bottom:1px dashed rgba(196,98,26,0.35);transition:color .15s;color:#C4621A}
+.bd-word.active{color:#D4A843;border-bottom-color:transparent}
+.bd-word.no-syn{color:rgba(255,253,248,0.65);cursor:default;border-bottom:none}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="v-home" class="view">
+  <div style="padding:32px 16px 12px;text-align:center;flex-shrink:0">
+    <div style="font-size:44px;color:#C4621A">ॐ</div>
+    <div style="font-size:24px;font-weight:700;color:#2A1F0E;margin-top:4px">Shloka</div>
+    <div style="font-style:italic;font-size:13px;color:#8B7355;margin-top:2px">Sacred Memory Practice</div>
+  </div>
+  <div class="scroll"><span class="lbl">Your Library</span><div id="lib-list"></div></div>
+  <div class="cta"><button class="btn-p" onclick="showView('add')">＋ Add New Shloka</button></div>
+</div>
+
+<!-- ADD -->
+<div id="v-add" class="view">
+  <div class="bar">
+    <button onclick="showView('home');resetForm()">←</button>
+    <span class="bar-title">New Shloka</span>
+    <div style="width:30px"></div>
+  </div>
+  <div class="scroll">
+    <div style="background:rgba(196,98,26,0.06);border:1px solid rgba(196,98,26,0.15);border-radius:12px;padding:14px 16px;margin-bottom:16px">
+      <div style="font-size:13px;color:#5C4A2A;font-weight:700;margin-bottom:4px">How to add a Shloka</div>
+      <div style="font-size:12px;color:#8B7355;font-style:italic;line-height:1.8">
+        1. Enter a reference (e.g. ŚB 7.10.4)<br/>
+        2. Paste the transliteration — the English shloka<br/>
+        3. Add word-by-word synonyms separated by semicolons<br/>
+        4. Add the full English translation
+      </div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(196,98,26,0.15);display:flex;align-items:flex-start;gap:8px">
+        <span style="font-size:14px">📌</span>
+        <div style="font-size:11px;color:#C4621A;line-height:1.6">Copy content only from <strong>vedabase.io</strong> for proper formatting — other sources may not display correctly.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:11px;color:#8B7355;font-style:italic;margin-bottom:14px">Fill in the fields below:</div>
+      <div style="margin-bottom:14px"><label class="lbl">Reference *</label><input id="f-ref" class="inp" placeholder="e.g. ŚB 7.10.4 or BG 2.47"/></div>
+      <div style="margin-bottom:14px"><label class="lbl">Transliteration *</label><textarea id="f-tr" class="inp" rows="4" placeholder="nānyathā te 'khila-guro…" style="resize:vertical"></textarea></div>
+      <div style="margin-bottom:14px"><label class="lbl">Synonyms (optional)</label><textarea id="f-syn" class="inp" rows="4" placeholder="na — not; anyathā — otherwise; te — Your…" style="resize:vertical"></textarea></div>
+      <div style="margin-bottom:14px"><label class="lbl">Translation *</label><textarea id="f-trans" class="inp" rows="3" placeholder="Full English meaning…" style="resize:vertical"></textarea></div>
+      <div id="f-err" style="color:#c96b6b;font-size:12px;font-style:italic;display:none">Please fill required fields.</div>
+    </div>
+  </div>
+  <div class="cta">
+    <button class="btn-p" onclick="saveLib()">Save to Library</button>
+    <button class="btn-s" onclick="showView('home');resetForm()">Cancel</button>
+  </div>
+</div>
+
+<!-- PREVIEW -->
+<div id="v-preview" class="view">
+  <div class="bar">
+    <button onclick="showView('home')">←</button>
+    <span id="prev-ref" class="bar-title"></span>
+    <button style="font-size:16px;color:rgba(139,115,85,0.45)" onclick="delShloka()">🗑</button>
+  </div>
+  <div class="scroll">
+    <div class="card-accent" id="prev-tr"></div>
+    <div class="card" id="prev-translation"></div>
+    <div class="card" id="prev-syns" style="display:none"></div>
+    <div class="card" id="prev-weak" style="display:none"></div>
+  </div>
+  <div class="cta">
+    <div style="font-size:11px;color:#8B7355;font-style:italic;text-align:center;margin-bottom:4px;line-height:1.6">Follow a guided 7-step memorization journey 🕉</div>
+    <button class="btn-p" onclick="startSession()">Begin Memorization</button>
+    <button class="btn-s" onclick="showView('home')">Back to Library</button>
+  </div>
+</div>
+
+<!-- LEARN -->
+<div id="v-learn" class="view">
+  <div class="bar">
+    <button onclick="learnBack()">←</button>
+    <span id="learn-label" style="font-size:12px;color:#8B7355"></span>
+    <button class="bar-action" onclick="skip()">Skip →</button>
+  </div>
+  <div id="ring-svg" style="display:flex;justify-content:center;padding:8px 0 4px"></div>
+  <div class="scroll" id="learn-body"></div>
+  <div class="cta">
+    <div class="steps-bar" id="steps-bar"></div>
+    <div id="learn-cta"></div>
+  </div>
+</div>
+
+<!-- DONE -->
+<div id="v-done" class="view" style="justify-content:center;align-items:center;padding:32px 20px;text-align:center;gap:16px">
+  <div style="font-size:60px;animation:fl 3s ease-in-out infinite">🪷</div>
+  <div>
+    <div style="font-size:24px;font-weight:700;color:#2A1F0E">Shloka Memorized</div>
+    <div style="color:#D4A843;letter-spacing:8px;margin:6px 0">· · ·</div>
+    <div style="font-style:italic;font-size:13px;color:#8B7355;line-height:1.7">You held the sacred verse<br/>in your heart and mind.</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <span style="font-size:22px;animation:fl 1.2s ease-in-out 0s infinite">🔥</span>
+    <span style="font-size:22px;animation:fl 1.2s ease-in-out .2s infinite">🔥</span>
+    <span style="font-size:22px;animation:fl 1.2s ease-in-out .4s infinite">🔥</span>
+  </div>
+  <div class="card-accent" id="done-verse" style="width:100%"></div>
+  <div id="done-weak" style="width:100%;display:none"></div>
+  <div style="width:100%;display:flex;flex-direction:column;gap:8px">
+    <button class="btn-p" onclick="startSession()">Practice Again</button>
+    <button class="btn-outline" onclick="clearTimers();startPracticeMore()">🔱 Go Deeper into this Shloka</button>
+    <button id="done-mem-btn" class="btn-green" onclick="addToMemorized()">✓ Add to Memorized List</button>
+    <div id="done-mem-saved" style="text-align:center;font-size:12px;color:#5a9e5a;font-style:italic;padding:6px 0;display:none">🪷 Saved to your Memorized List</div>
+    <button class="btn-s" onclick="showView('home')">Back to Library</button>
+  </div>
+</div>
+
+<!-- GO DEEPER -->
+<div id="v-practice" class="view">
+  <div class="bar">
+    <button onclick="showView('done')">←</button>
+    <span class="bar-title">Go Deeper 🔱</span>
+    <button class="bar-action" onclick="startPracticeMore()">Reshuffle ↺</button>
+  </div>
+  <div class="scroll" id="practice-body"></div>
+  <div class="cta">
+    <button class="btn-p" onclick="startPracticeMore()">New Round 🎲</button>
+    <button class="btn-s" onclick="showView('home')">Back to Library</button>
+  </div>
+</div>
+
+<script>
+// ── Data & State ──────────────────────────────────────────
+const SAMPLE={id:1,ref:"ŚB 7.10.4",transliteration:"nānyathā te 'khila-guro\nghaṭeta karuṇātmanaḥ\nyas ta āśiṣa āśāste\nna sa bhṛtyaḥ sa vai vaṇik",synonyms:"na — not; anyathā — otherwise; te — Your; akhila-guro — O universal teacher; ghaṭeta — it can happen; karuṇātmanaḥ — of the supremely merciful; yaḥ — one who; āśiṣaḥ — blessings; āśāste — desires; bhṛtyaḥ — servant; vai — indeed; vaṇik — merchant",translation:"O universal teacher, merciful to all — one who desires blessings in exchange for service is no servant; he is merely a merchant."};
+const STEPS=[{type:"line",label:"Line by Line",dur:120},{type:"rhythm",label:"Rhythm & Recite",dur:90},{type:"firstletter",label:"First-Letter Cues",dur:120},{type:"breakdown",label:"Verse Breakdown",dur:150},{type:"synonyms",label:"Word by Word",dur:120},{type:"weakwords",label:"Weak Word Drill",dur:90},{type:"recall",label:"Complete Recall",dur:90}];
+const CIRC=2*Math.PI*28;
+let lib=[SAMPLE],memorizedIds=new Set(),curIdx=0,step=0,timeLeft=0;
+let timerInt=null,rhythmInt=null,weakSkipInt=null;
+let revealed={},recallShown=false,maskPatterns={};
+let wrongWords=new Set(),sessionWrong=new Set();
+
+// ── Helpers ───────────────────────────────────────────────
+const sh=()=>lib[curIdx];
+const trLines=()=>sh().transliteration.split("\n").filter(Boolean);
+function parseSynonyms(str){return(str||"").split(";").map(s=>{const[w,...r]=s.split("—");return{word:w?.trim(),meaning:r.join("—").trim()};}).filter(s=>s.word&&s.meaning);}
+const synPairs=()=>parseSynonyms(sh().synonyms);
+const weakPairs=()=>synPairs().filter(s=>wrongWords.has(s.word));
+function stripD(s){return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ḍ/g,"d").replace(/ḥ/g,"h").replace(/ḷ/g,"l").replace(/ṃ/g,"m").replace(/ṇ/g,"n").replace(/ṅ/g,"n").replace(/ñ/g,"n").replace(/ṛ/g,"r").replace(/ṣ/g,"s").replace(/ṭ/g,"t").replace(/ā/g,"a").replace(/ī/g,"i").replace(/ū/g,"u").replace(/ś/g,"s").replace(/ḻ/g,"l").toLowerCase().trim();}
+function cleanW(w){return w.replace(/[.,;!?'"'()\[\]{}]/g,"").toLowerCase().trim();}
+function buildSynMap(pairs){const m={};pairs.forEach(s=>{const k1=cleanW(s.word),k2=stripD(k1);if(!m[k1])m[k1]=s.meaning;if(!m[k2])m[k2]=s.meaning;s.word.split("-").forEach(p=>{const pk=cleanW(p),ps=stripD(pk);if(!m[pk])m[pk]=s.meaning;if(!m[ps])m[ps]=s.meaning;});});return m;}
+function lookupM(word,map){const c=cleanW(word.replace(/['''`]/g,""));return map[c]||map[stripD(c)]||null;}
+function generateMasks(lines){const out={};lines.forEach((l,i)=>{const ws=l.split(" ");const el=ws.map((_,j)=>j).filter(j=>ws[j].length>1);const sh=[...el].sort(()=>Math.random()-.5);out[i]=new Set(sh.slice(0,Math.ceil(sh.length*.5)));});return out;}
+function loadWrong(){try{const v=localStorage.getItem("ww:"+sh().id);wrongWords=v?new Set(JSON.parse(v)):new Set();}catch{wrongWords=new Set();}}
+function saveWrong(){try{localStorage.setItem("ww:"+sh().id,JSON.stringify([...wrongWords]));}catch{}}
+function loadMemorized(){try{const v=localStorage.getItem("memorized");memorizedIds=v?new Set(JSON.parse(v)):new Set();}catch{memorizedIds=new Set();}}
+function saveMemorized(){try{localStorage.setItem("memorized",JSON.stringify([...memorizedIds]));}catch{}}
+
+// ── Routing ───────────────────────────────────────────────
+function showView(id){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  const el=document.getElementById("v-"+id);
+  el.classList.add("active");
+  el.classList.remove("anim");void el.offsetWidth;el.classList.add("anim");
+  if(id==="home")renderHome();
+  if(id==="preview")renderPreview();
+  if(id==="done")renderDone();
+}
+
+// ── Home ──────────────────────────────────────────────────
+function renderHome(){
+  const list=document.getElementById("lib-list");
+  if(!lib.length){list.innerHTML=`<div style="text-align:center;padding:40px 16px"><div style="font-size:40px;opacity:.3;margin-bottom:12px">📜</div><div style="font-style:italic;color:#8B7355;font-size:14px;line-height:1.7">Library is empty.<br/>Add your first shloka.</div></div>`;return;}
+  let html="";
+  if(lib.length===1&&lib[0].id===1){html+=`<div style="background:linear-gradient(135deg,#FFF8EE,#FFF3E0);border:1.5px solid rgba(196,98,26,0.25);border-radius:14px;padding:16px;margin-bottom:16px"><div style="font-size:13px;font-weight:700;color:#C4621A;margin-bottom:8px">👋 Welcome to Shloka!</div><div style="font-size:12px;color:#5C4A2A;line-height:1.9"><span style="display:block;margin-bottom:4px">📖 <b>Tap a shloka</b> to preview it</span><span style="display:block;margin-bottom:4px">▶️ <b>Begin Memorization</b> for guided 7 steps</span><span style="display:block;margin-bottom:4px">🔱 <b>Go Deeper</b> for extra drills after memorizing</span><span style="display:block">➕ <b>Add New Shloka</b> to grow your library</span></div></div>`;}
+  lib.forEach((s,i)=>{const isMem=memorizedIds.has(s.id);html+=`<div class="card" style="cursor:pointer;display:flex;align-items:center;gap:10px" onclick="curIdx=${i};loadWrong();showView('preview')"><span style="font-size:20px">${isMem?"🪷":"🕉"}</span><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><div style="font-size:11px;color:#C4621A;font-weight:700;letter-spacing:.07em">${s.ref}</div>${isMem?`<span class="mem-badge">MEMORIZED</span>`:""}</div><div style="font-size:13px;color:#5C4A2A;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.transliteration.split("\n")[0]}</div></div><button style="background:none;border:none;cursor:pointer;color:rgba(139,115,85,0.4);font-size:13px;padding:4px 6px" onclick="event.stopPropagation();delAt(${i})">✕</button><span style="color:#8B7355">›</span></div>`;});
+  list.innerHTML=html;
+}
+
+// ── Add ───────────────────────────────────────────────────
+function resetForm(){["f-ref","f-tr","f-syn","f-trans"].forEach(id=>document.getElementById(id).value="");document.getElementById("f-err").style.display="none";}
+function saveLib(){
+  const ref=document.getElementById("f-ref").value.trim(),tr=document.getElementById("f-tr").value.trim(),trans=document.getElementById("f-trans").value.trim();
+  if(!ref||!tr||!trans){document.getElementById("f-err").style.display="block";return;}
+  const syn=document.getElementById("f-syn").value.trim();
+  lib.push({id:Date.now(),ref,transliteration:tr,synonyms:syn,translation:trans});
+  curIdx=lib.length-1;loadWrong();resetForm();showView("preview");
+}
+function delAt(i){if(!confirm("Remove this shloka?"))return;lib.splice(i,1);showView("home");}
+function delShloka(){if(!confirm("Remove this shloka?"))return;lib.splice(curIdx,1);showView("home");}
+
+// ── Preview ───────────────────────────────────────────────
+function renderPreview(){
+  const s=sh(),lines=trLines(),pairs=synPairs(),wp=weakPairs();
+  document.getElementById("prev-ref").textContent=s.ref;
+  document.getElementById("prev-tr").innerHTML=`<div class="tr-text">${lines.map(l=>`<div>${l}</div>`).join("")}</div>`;
+  document.getElementById("prev-translation").innerHTML=`<span class="lbl">Translation</span><div class="mn">${s.translation}</div>`;
+  const synEl=document.getElementById("prev-syns");
+  if(pairs.length){synEl.style.display="";synEl.innerHTML=`<span class="lbl">Word by Word</span>`+pairs.map(p=>`<div class="mn" style="font-size:12px;margin-bottom:5px"><span style="color:#C4621A;font-weight:600">${p.word}</span> <span style="color:#8B7355">—</span> ${p.meaning}</div>`).join("");}else synEl.style.display="none";
+  const wkEl=document.getElementById("prev-weak");
+  if(wp.length){wkEl.style.display="";wkEl.style.borderLeft="3px solid #e07070";wkEl.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:10px;letter-spacing:.14em;color:#c96b6b;text-transform:uppercase;font-weight:700">Weak Words (${wp.length})</span><button style="background:none;border:none;cursor:pointer;font-size:11px;color:#8B7355;font-style:italic;font-family:Georgia,serif" onclick="clearWrong()">clear</button></div>`+wp.map(p=>`<div class="mn" style="font-size:12px;margin-bottom:5px"><span style="color:#c96b6b;font-weight:600">${p.word}</span> <span style="color:#8B7355">—</span> ${p.meaning}</div>`).join("");}else wkEl.style.display="none";
+}
+function clearWrong(){wrongWords=new Set();saveWrong();renderPreview();}
+
+// ── Session ───────────────────────────────────────────────
+function startSession(){
+  maskPatterns=generateMasks(trLines());sessionWrong=new Set();step=0;revealed={};recallShown=false;
+  clearTimers();showView("learn");renderStep();tick(STEPS[0].dur);
+}
+function clearTimers(){clearInterval(timerInt);clearInterval(rhythmInt);clearInterval(weakSkipInt);timerInt=rhythmInt=weakSkipInt=null;}
+function tick(dur){clearTimers();timeLeft=dur;renderRing();timerInt=setInterval(()=>{timeLeft--;renderRing();if(timeLeft<=0){clearInterval(timerInt);setTimeout(advance,500);}},1000);}
+function advance(){clearTimers();if(step<STEPS.length-1){step++;revealed={};recallShown=false;renderStep();tick(STEPS[step].dur);}else{const merged=new Set([...wrongWords,...sessionWrong]);wrongWords=merged;saveWrong();showView("done");}}
+function skip(){clearTimers();advance();}
+function learnBack(){clearTimers();showView("preview");}
+
+// ── Ring ──────────────────────────────────────────────────
+function renderRing(){
+  const pct=STEPS[step]?timeLeft/STEPS[step].dur:0,warn=timeLeft<15&&timeLeft>0,col=warn?"#e07070":"#C4621A";
+  document.getElementById("ring-svg").innerHTML=`<svg width="64" height="64" viewBox="0 0 64 64" style="transform:rotate(-90deg)"><circle cx="32" cy="32" r="28" fill="none" stroke="rgba(196,98,26,0.12)" stroke-width="3"/><circle cx="32" cy="32" r="28" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-dasharray="${CIRC}" stroke-dashoffset="${CIRC*(1-pct)}" style="transition:stroke-dashoffset 1s linear,stroke .3s"/><text x="32" y="28" text-anchor="middle" dominant-baseline="middle" style="fill:${col};font-size:17px;font-weight:bold;font-family:Georgia,serif" transform="rotate(90,32,32)">${timeLeft>0?timeLeft:"✓"}</text><text x="32" y="44" text-anchor="middle" dominant-baseline="middle" style="fill:#8B7355;font-size:10px;font-family:Georgia,serif" transform="rotate(90,32,32)">sec</text></svg>`;
+}
+
+// ── Step UI ───────────────────────────────────────────────
+function renderStepsBar(){document.getElementById("steps-bar").innerHTML=STEPS.map((_,i)=>`<div class="seg" style="background:${i<step?"#D4A843":i===step?"#C4621A":"rgba(196,98,26,0.1)"}"></div>`).join("");}
+function renderLearnCTA(){const c=document.getElementById("learn-cta");if(step<STEPS.length-1){c.innerHTML=`<button class="btn-p" onclick="skip()">Continue →</button>`;}else{c.innerHTML=`<div style="display:flex;gap:8px"><button class="btn-p" style="flex:1" onclick="skip()">I Remember It ✓</button><button style="flex:1;padding:15px;background:transparent;color:#C4621A;border:2px solid rgba(196,98,26,0.5);border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:Georgia,serif" onclick="clearTimers();startPracticeMore()">🔱 Go Deeper</button></div>`;}}
+
+function renderStep(){
+  document.getElementById("learn-label").textContent=`${step+1}/${STEPS.length} — ${STEPS[step].label}`;
+  renderStepsBar();renderLearnCTA();
+  const body=document.getElementById("learn-body");body.innerHTML="";
+  const s=sh(),lines=trLines(),pairs=synPairs(),synMap=buildSynMap(pairs),wp=weakPairs(),cfg=STEPS[step];
+
+  // 1 — LINE BY LINE
+  if(cfg.type==="line"){
+    body.innerHTML=`<div class="hint">Tap each line to reveal it</div>`+lines.map((l,i)=>`<div class="card" style="padding:14px 16px"><div class="lbl">Line ${i+1}</div><div id="llt-${i}" onclick="toggleReveal(${i})" style="font-style:italic;font-size:15px;color:#2A1F0E;cursor:pointer;filter:blur(6px);transition:filter .3s;line-height:1.9">${l}</div><div id="lltap-${i}" style="font-size:11px;color:rgba(196,98,26,0.5);margin-top:4px">tap to reveal</div></div>`).join("")+`<div class="card" style="background:rgba(196,98,26,0.03)"><span class="lbl">Meaning</span><div class="mn">${s.translation}</div></div>`;
+  }
+
+  // 2 — RHYTHM
+  else if(cfg.type==="rhythm"){
+    body.innerHTML=`<div class="hint">Each line is highlighted — say it aloud as it glows</div><div class="card" id="rhythm-card">${lines.map((l,i)=>`<div class="rhythm-line" id="rl-${i}" onclick="jumpRhythm(${i})">${l}</div>`).join("")}</div><div id="rhythm-done" style="display:none;text-align:center;font-style:italic;color:#8B7355;font-size:13px;padding:10px;animation:fi .5s ease">🕉 Now try reciting all lines without looking!</div><div style="display:flex;justify-content:center;gap:8px;margin-top:4px">${lines.map((_,i)=>`<div class="dot" id="rd-${i}" style="background:rgba(196,98,26,0.15)" onclick="jumpRhythm(${i})"></div>`).join("")}</div>`;
+    let ri=0;setRhythm(ri,lines.length);
+    rhythmInt=setInterval(()=>{ri++;if(ri>=lines.length){clearInterval(rhythmInt);const d=document.getElementById("rhythm-done");if(d)d.style.display="";}else setRhythm(ri,lines.length);},3500);
+  }
+
+  // 3 — FIRST LETTER
+  else if(cfg.type==="firstletter"){
+    const linesHtml=lines.map((l,i)=>{const masked=l.split(" ").map((w,wi)=>{if(maskPatterns[i]&&maskPatterns[i].has(wi)&&w.length>1)return `<span style="display:inline-block;cursor:pointer;padding:0 3px;background:rgba(196,98,26,0.13);border:1px dashed rgba(196,98,26,0.4);border-radius:4px;color:#C4621A;font-weight:700;transition:all .2s;user-select:none" id="mw-${i}-${wi}" onclick="toggleMask(${i},${wi},'${w.replace(/'/g,"\\'")}')">${w[0]}…</span>`;return `<span>${w} </span>`;}).join(" ");return `<div style="font-style:italic;font-size:14px;line-height:2.3;color:#2A1F0E;margin-bottom:4px">${masked}</div>`;}).join("");
+    body.innerHTML=`<div class="hint">First letter shown — recall the full word</div><div class="card"><span class="lbl">First-Letter Cues</span>${linesHtml}</div><div class="card" style="background:rgba(196,98,26,0.03)"><span class="lbl">Translation</span><div class="mn" style="font-size:13px">${s.translation}</div></div>`;
+  }
+
+  // 4 — BREAKDOWN
+  else if(cfg.type==="breakdown"){
+    window._bdLines=lines;window._bdMap=synMap;renderBreakdown(0);
+  }
+
+  // 5 — WORD BY WORD
+  else if(cfg.type==="synonyms"){
+    if(!pairs.length){body.innerHTML=`<div class="card" style="text-align:center;padding:28px 16px"><div style="color:#8B7355;font-style:italic;font-size:13px;margin-bottom:14px">No synonyms added for this shloka.</div><button class="btn-s" style="width:auto;padding:8px 20px" onclick="skip()">Skip →</button></div>`;}
+    else{body.innerHTML=`<div class="hint">Tap each meaning to reveal — we track what you didn't know</div><div class="card"><span class="lbl">Word by Word — tap to reveal</span>${pairs.map((p,i)=>`<div style="display:flex;align-items:baseline;gap:8px;padding:8px 0;border-bottom:${i<pairs.length-1?"1px solid rgba(196,98,26,0.07)":"none"}"><span style="color:#C4621A;font-weight:700;font-size:13px;min-width:110px;flex-shrink:0">${p.word}</span><span style="color:#8B7355;font-size:11px">—</span><span class="mmask" id="mm-${i}" onclick="revealMM(${i},'${p.word.replace(/'/g,"\\'")}')">${p.meaning}</span></div>`).join("")}</div><div class="card" style="background:rgba(196,98,26,0.03)"><span class="lbl">Full Transliteration</span><div class="tr-text">${lines.map(l=>`<div>${l}</div>`).join("")}</div></div>`;}
+  }
+
+  // 6 — WEAK WORDS
+  else if(cfg.type==="weakwords"){
+    if(!wp.length){
+      let wc=3;
+      body.innerHTML=`<div class="card" style="text-align:center;padding:32px 16px"><div style="font-size:30px;margin-bottom:10px">✨</div><div style="color:#5C4A2A;font-size:14px;margin-bottom:6px;font-weight:700">No weak words yet!</div><div style="color:#8B7355;font-style:italic;font-size:12px;line-height:1.7;margin-bottom:16px">Words you tap to reveal in Word by Word<br/>will appear here for extra drilling.</div><div id="ww-count" style="color:#C4621A;font-size:12px;font-style:italic">Skipping in ${wc}…</div></div>`;
+      weakSkipInt=setInterval(()=>{wc--;const el=document.getElementById("ww-count");if(el)el.textContent=`Skipping in ${wc}…`;if(wc<=0){clearInterval(weakSkipInt);skip();}},1000);
+    }else{body.innerHTML=`<div class="hint">Your weak words — tap to reveal, try to recall first</div><div class="card" style="border-left:3px solid #e07070"><span class="lbl" style="color:#c96b6b">Weak Words (${wp.length})</span>${wp.map((p,i)=>`<div style="display:flex;align-items:baseline;gap:8px;padding:8px 0;border-bottom:${i<wp.length-1?"1px solid rgba(196,98,26,0.07)":"none"}"><span style="color:#c96b6b;font-weight:700;font-size:13px;min-width:110px;flex-shrink:0">${p.word}</span><span style="color:#8B7355;font-size:11px">—</span><span class="mmask" id="wm-${i}" onclick="this.classList.add('shown')">${p.meaning}</span></div>`).join("")}</div>`;}
+  }
+
+  // 7 — RECALL
+  else if(cfg.type==="recall"){
+    body.innerHTML=`<div class="hint">Close your eyes — then recall the whole shloka</div><div id="recall-hide" onclick="showRecall()" style="background:rgba(196,98,26,0.03);border:2px dashed rgba(196,98,26,0.22);border-radius:14px;padding:36px 16px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:14px"><div style="font-size:36px;opacity:.3">🕉</div><div style="font-style:italic;color:#8B7355;font-size:14px">Can you recall all the lines?</div><button style="font-family:Georgia,serif;font-size:13px;color:#C4621A;background:none;border:1.5px solid rgba(196,98,26,0.3);border-radius:8px;padding:8px 20px;cursor:pointer" onclick="event.stopPropagation();showRecall()">Reveal Shloka</button></div><div id="recall-show" style="display:none;animation:fi .4s ease"><div class="card-accent"><div class="tr-text">${lines.map(l=>`<div>${l}</div>`).join("")}</div></div><div class="card"><span class="lbl">Translation</span><div class="mn">${s.translation}</div></div>${wp.length?`<div class="card" style="border-left:2px solid #e07070"><span class="lbl" style="color:#c96b6b">Your Weak Words</span>${wp.map(p=>`<div class="mn" style="font-size:12px;margin-bottom:5px"><span style="color:#c96b6b;font-weight:600">${p.word}</span> <span style="color:#8B7355">—</span> ${p.meaning}</div>`).join("")}</div>`:""}</div>`;
+  }
+}
+
+// ── Step Interactions ─────────────────────────────────────
+function toggleReveal(i){revealed[i]=!revealed[i];const t=document.getElementById(`llt-${i}`),tap=document.getElementById(`lltap-${i}`);if(t)t.style.filter=revealed[i]?"none":"blur(6px)";if(tap)tap.style.display=revealed[i]?"none":"";}
+function setRhythm(idx,total){for(let i=0;i<total;i++){const el=document.getElementById(`rl-${i}`),dot=document.getElementById(`rd-${i}`);if(el){el.className="rhythm-line"+(i===idx?" active":i<idx?" past":"");const old=el.querySelector(".say-lbl");if(i===idx&&!old){const sp=document.createElement("span");sp.className="say-lbl";sp.style.cssText="font-size:11px;display:block;color:#C4621A;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px;font-style:normal;font-weight:700";sp.textContent="🗣 Say aloud";el.prepend(sp);}else if(i!==idx&&old)old.remove();}if(dot)dot.style.background=i===idx?"#C4621A":i<idx?"rgba(196,98,26,0.4)":"rgba(196,98,26,0.15)";}}
+function jumpRhythm(idx){clearInterval(rhythmInt);const lines=trLines();setRhythm(idx,lines.length);rhythmInt=setInterval(()=>{idx++;if(idx>=lines.length){clearInterval(rhythmInt);const d=document.getElementById("rhythm-done");if(d)d.style.display="";}else setRhythm(idx,lines.length);},3500);}
+function toggleMask(li,wi,word){const el=document.getElementById(`mw-${li}-${wi}`);if(!el)return;const shown=el.style.color==="#2A1F0E";el.textContent=shown?word[0]+"…":word;el.style.color=shown?"#C4621A":"#2A1F0E";el.style.background=shown?"rgba(196,98,26,0.13)":"rgba(196,98,26,0.06)";el.style.border=shown?"1px dashed rgba(196,98,26,0.4)":"1px solid transparent";}
+function revealMM(i,word){const el=document.getElementById(`mm-${i}`);if(el&&!el.classList.contains("shown")){el.classList.add("shown");sessionWrong.add(word);}}
+function showRecall(){const h=document.getElementById("recall-hide"),r=document.getElementById("recall-show");if(h)h.style.display="none";if(r)r.style.display="";}
+
+// ── Breakdown ─────────────────────────────────────────────
+function renderBreakdown(idx){
+  const lines=window._bdLines||trLines(),synMap=window._bdMap||buildSynMap(synPairs());
+  const line=lines[idx]||"";
+  const dots=lines.map((_,i)=>`<div class="dot" style="background:${i===idx?"#C4621A":"rgba(196,98,26,0.25)"}" onclick="renderBreakdown(${i})"></div>`).join("");
+  const words=line.split(" ").map((w,i)=>{const m=lookupM(w,synMap);return `<span class="${m?"bd-word":"bd-word no-syn"}" id="bdw-${i}" onclick="${m?`toggleBD(${i},'${w.replace(/'/g,"\\'").replace(/"/g,"&quot;")}','${(m||"").replace(/'/g,"\\'").replace(/"/g,"&quot;")}')`:""}">${w} </span>`;}).join("");
+  document.getElementById("learn-body").innerHTML=`<div class="hint">Focus mode — one line at a time, tap words for meaning</div><div class="card-dark"><div style="display:flex;gap:8px;justify-content:center;margin-bottom:8px">${dots}</div><div style="text-align:center;font-size:9px;letter-spacing:.2em;color:rgba(196,98,26,0.4);text-transform:uppercase;margin-bottom:12px">Line ${idx+1} of ${lines.length}</div><div style="text-align:center;line-height:2.6;font-size:17px;font-style:italic;min-height:64px">${words}</div><div id="bd-meaning" style="min-height:54px;padding-top:8px"><div style="text-align:center;font-size:11px;color:rgba(255,253,248,0.18);font-style:italic;padding-top:8px">tap highlighted words to see meaning</div></div><div style="display:flex;justify-content:space-between;margin-top:12px"><button onclick="renderBreakdown(${Math.max(0,idx-1)})" ${idx===0?'disabled':''} style="background:none;border:1px solid rgba(196,98,26,0.3);border-radius:8px;color:${idx===0?"rgba(196,98,26,0.18)":"#C4621A"};padding:8px 18px;cursor:${idx===0?"default":"pointer"};font-family:Georgia,serif;font-size:13px">← Prev</button><button onclick="renderBreakdown(${Math.min(lines.length-1,idx+1)})" ${idx===lines.length-1?'disabled':''} style="background:none;border:1px solid rgba(196,98,26,0.3);border-radius:8px;color:${idx===lines.length-1?"rgba(196,98,26,0.18)":"#C4621A"};padding:8px 18px;cursor:${idx===lines.length-1?"default":"pointer"};font-family:Georgia,serif;font-size:13px">Next →</button></div></div>`;
+}
+function toggleBD(wi,word,meaning){const el=document.getElementById(`bdw-${wi}`),box=document.getElementById("bd-meaning");if(!el||!box)return;const wasActive=el.classList.contains("active");document.querySelectorAll(".bd-word").forEach(e=>e.classList.remove("active"));if(wasActive){box.innerHTML=`<div style="text-align:center;font-size:11px;color:rgba(255,253,248,0.18);font-style:italic;padding-top:8px">tap highlighted words to see meaning</div>`;}else{el.classList.add("active");box.innerHTML=`<div style="background:rgba(196,98,26,0.13);border:1px solid rgba(196,98,26,0.3);border-radius:10px;padding:12px 16px;animation:fi .2s ease"><span style="color:#C4621A;font-weight:700;font-size:13px">${word}</span><span style="color:rgba(255,253,248,0.35);margin:0 8px">—</span><span style="color:rgba(255,253,248,0.85);font-style:italic;font-size:13px">${meaning}</span></div>`;}}
+
+// ── Done ──────────────────────────────────────────────────
+function renderDone(){
+  const s=sh(),lines=trLines(),pairs=synPairs();
+  document.getElementById("done-verse").innerHTML=`<div style="font-size:11px;color:#C4621A;letter-spacing:.1em;font-weight:700;text-transform:uppercase;margin-bottom:10px">${s.ref}</div><div class="tr-text" style="margin-bottom:8px">${lines.map(l=>`<div>${l}</div>`).join("")}</div><div class="divline"></div><div class="mn" style="text-align:center;font-size:13px">${s.translation}</div>`;
+  const wk=document.getElementById("done-weak");
+  if(sessionWrong.size>0){const wrong=[...sessionWrong].map(w=>{const p=pairs.find(x=>x.word===w);return p?`<div class="mn" style="font-size:12px;margin-bottom:4px"><span style="color:#c96b6b;font-weight:600">${p.word}</span> <span style="color:#8B7355">—</span> ${p.meaning}</div>`:""}).join("");wk.style.display="";wk.innerHTML=`<div class="card" style="border-left:2px solid #e07070;text-align:left"><span class="lbl" style="color:#c96b6b">Words to review (${sessionWrong.size})</span>${wrong}</div>`;}else wk.style.display="none";
+  const isMem=memorizedIds.has(s.id);document.getElementById("done-mem-btn").style.display=isMem?"none":"";document.getElementById("done-mem-saved").style.display=isMem?"":"none";
+}
+function addToMemorized(){memorizedIds.add(sh().id);saveMemorized();document.getElementById("done-mem-btn").style.display="none";document.getElementById("done-mem-saved").style.display="";}
+
+// ── Go Deeper ─────────────────────────────────────────────
+function startPracticeMore(){showView("practice");renderPracticeBody();}
+function renderPracticeBody(){
+  const lines=trLines(),pairs=synPairs();
+  document.getElementById("practice-body").innerHTML=`<div style="font-size:11px;color:#8B7355;font-style:italic;text-align:center;margin-bottom:16px;line-height:1.7">Go deeper into this shloka — three fresh drills.</div><div style="margin-bottom:16px"><div style="font-size:10px;letter-spacing:.12em;color:#8B7355;text-transform:uppercase;margin-bottom:8px">Drill 1 — Scramble</div><div id="drill-scramble"></div></div><div style="margin-bottom:16px"><div style="font-size:10px;letter-spacing:.12em;color:#8B7355;text-transform:uppercase;margin-bottom:8px">Drill 2 — Fill in the Blank</div><div id="drill-blank"></div></div><div style="margin-bottom:16px"><div style="font-size:10px;letter-spacing:.12em;color:#8B7355;text-transform:uppercase;margin-bottom:8px">Drill 3 — Meaning Match</div><div id="drill-match"></div></div>`;
+  initScramble(lines);initBlank(lines);initMatch(pairs);
+}
+
+// Scramble
+let _sOrig=[],_sTiles=[],_sPlaced=[],_sDone=false,_sLi=0;
+function initScramble(lines){_sLi=Math.floor(Math.random()*lines.length);_sOrig=lines[_sLi].split(" ");_sTiles=[..._sOrig].sort(()=>Math.random()-.5);_sPlaced=[];_sDone=false;drawScramble();}
+function drawScramble(){
+  const el=document.getElementById("drill-scramble");if(!el)return;
+  const placed=_sPlaced.length?_sPlaced.map(w=>`<span class="placed-word">${w}</span>`).join(" "):`<span style="color:rgba(255,253,248,0.2);font-size:12px;font-style:italic">tap words below…</span>`;
+  const tiles=_sTiles.map((w,i)=>`<span class="tile" onclick="placeTile(${i})">${w}</span>`).join(" ");
+  el.innerHTML=`<div style="background:#1A1208;border-radius:16px;padding:20px 16px;border:1px solid rgba(196,98,26,0.25)"><div style="font-size:9px;letter-spacing:.2em;color:#C4621A;text-transform:uppercase;margin-bottom:6px;text-align:center">🔀 Scramble Drill</div><div style="font-size:11px;color:rgba(255,253,248,0.35);font-style:italic;text-align:center;margin-bottom:14px">Tap words to rebuild Line ${_sLi+1} in order</div><div style="min-height:48px;background:rgba(196,98,26,0.07);border-radius:10px;border:1px dashed rgba(196,98,26,0.3);padding:10px 12px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">${placed}</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">${tiles}</div><div id="scramble-result"></div></div>`;
+}
+function placeTile(i){if(_sDone)return;_sPlaced.push(_sTiles[i]);_sTiles.splice(i,1);if(_sPlaced.length===_sOrig.length){_sDone=true;const correct=_sPlaced.join(" ")===_sOrig.join(" ");drawScramble();const r=document.getElementById("scramble-result");if(r)r.innerHTML=`<div style="text-align:center;animation:fi .3s ease"><div style="font-size:13px;margin-bottom:8px;color:${correct?"#7bc47b":"#e07070"};font-style:italic">${correct?"✓ Perfect!":"✗ Correct order:"}</div>${!correct?`<div style="font-style:italic;color:rgba(255,253,248,0.65);font-size:13px;margin-bottom:10px">${_sOrig.join(" ")}</div>`:""}<button onclick="initScramble(trLines())" style="background:none;border:1px solid rgba(196,98,26,0.4);border-radius:8px;color:#C4621A;padding:7px 18px;cursor:pointer;font-family:Georgia,serif;font-size:13px">Try Again ↺</button></div>`;}else drawScramble();}
+
+// Blank
+let _bQ=null,_bChosen=null;
+function initBlank(lines){_bQ=makeBlankQ(lines);_bChosen=null;drawBlank();}
+function makeBlankQ(lines){const allW=lines.flatMap(l=>l.split(" ").filter(w=>w.length>2));const li=Math.floor(Math.random()*lines.length);const ws=lines[li].split(" ");const el=ws.map((_,i)=>i).filter(i=>ws[i].length>2);const bi=el[Math.floor(Math.random()*el.length)]??0;const ans=ws[bi];const pool=allW.filter(w=>w.toLowerCase()!==ans.toLowerCase());const sh=[...pool].sort(()=>Math.random()-.5);const d=[];for(const w of sh){if(!d.some(x=>x.toLowerCase()===w.toLowerCase()))d.push(w);if(d.length===3)break;}while(d.length<3)d.push(ans.slice(0,3)+d.length);return{li,ws,bi,ans,opts:[...d,ans].sort(()=>Math.random()-.5)};}
+function drawBlank(){const el=document.getElementById("drill-blank");if(!el||!_bQ)return;const{ws,bi,ans,opts}=_bQ;const line=ws.map((w,i)=>i===bi?`<span style="display:inline-block;min-width:72px;border-bottom:2px solid #C4621A;margin:0 4px;text-align:center;font-weight:700;color:${!_bChosen?"#C4621A":_bChosen===ans?"#5a9e5a":"#e07070"}">${_bChosen?ans:"____"}</span>`:`<span>${w} </span>`).join("");const optBtns=opts.map((o,i)=>{let cls="opt-btn",circ=String.fromCharCode(65+i);if(_bChosen){if(o===ans){cls+=" correct";circ="✓";}else if(o===_bChosen){cls+=" wrong";circ="✗";}}return `<button class="${cls}" onclick="chooseBlank('${o.replace(/'/g,"\\'")}')"><span class="circle">${circ}</span>${o}</button>`;}).join("");el.innerHTML=`<div style="background:#FFFDF8;border-radius:16px;padding:20px 16px;border:1px solid rgba(196,98,26,0.2);box-shadow:0 2px 12px rgba(42,31,14,0.06)"><div style="font-size:9px;letter-spacing:.2em;color:#C4621A;text-transform:uppercase;margin-bottom:6px;text-align:center">✏️ Fill in the Blank</div><div style="font-size:11px;color:#8B7355;font-style:italic;text-align:center;margin-bottom:16px">Choose the missing word</div><div style="font-style:italic;font-size:15px;line-height:2.6;color:#2A1F0E;text-align:center;margin-bottom:18px">${line}</div><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">${optBtns}</div>${_bChosen?`<div style="text-align:center;animation:fi .3s ease"><div style="font-size:13px;margin-bottom:10px;font-style:italic;color:${_bChosen===ans?"#5a9e5a":"#e07070"}">${_bChosen===ans?"✓ Correct!":"✗ Answer: "+ans}</div><button onclick="initBlank(trLines())" style="background:#C4621A;color:#fff;border:none;border-radius:9px;padding:9px 22px;cursor:pointer;font-family:Georgia,serif;font-size:13px;font-weight:700">Next ↺</button></div>`:""}</div>`;}
+function chooseBlank(opt){if(_bChosen)return;_bChosen=opt;drawBlank();}
+
+// Match
+let _mPairs=[],_mQ=null,_mChosen=null,_mRound=0;
+function initMatch(pairs){if(pairs.length<3){document.getElementById("drill-match").innerHTML=`<div class="card" style="text-align:center"><div style="color:#8B7355;font-style:italic;font-size:13px">Add 3+ synonyms to unlock Meaning Match.</div></div>`;return;}_mPairs=pairs;_mRound=0;makeMatchQ();}
+function makeMatchQ(){_mChosen=null;const q=_mPairs[_mRound%_mPairs.length];const oth=_mPairs.filter(p=>p.word!==q.word).sort(()=>Math.random()-.5).slice(0,2);_mQ={q,opts:[...oth,q].sort(()=>Math.random()-.5)};drawMatch();}
+function drawMatch(){const el=document.getElementById("drill-match");if(!el||!_mQ)return;const{q,opts}=_mQ;const optHtml=opts.map(o=>{let bg="#FFFDF8",border="1px solid rgba(196,98,26,0.18)",color="#5C4A2A";if(_mChosen){if(o.word===q.word){bg="rgba(91,158,91,0.12)";border="1.5px solid #5a9e5a";color="#3a7a3a";}else if(_mChosen===o.word){bg="rgba(224,112,112,0.1)";border="1.5px solid #e07070";color="#b05050";}}return `<div onclick="chooseMatch('${o.word.replace(/'/g,"\\'")}')" style="background:${bg};border:${border};border-radius:10px;padding:12px 14px;cursor:${_mChosen?"default":"pointer"};transition:all .2s;color:${color};font-size:13px;font-style:italic;line-height:1.5">${o.meaning}</div>`;}).join("");el.innerHTML=`<div style="background:linear-gradient(135deg,#FFF8F0,#FAF0E0);border-radius:16px;padding:20px 16px;border:2px solid rgba(196,98,26,0.2)"><div style="font-size:9px;letter-spacing:.2em;color:#C4621A;text-transform:uppercase;margin-bottom:6px;text-align:center">🎯 Meaning Match</div><div style="font-size:11px;color:#8B7355;font-style:italic;text-align:center;margin-bottom:18px">Which meaning matches this word?</div><div style="text-align:center;margin-bottom:20px;background:rgba(196,98,26,0.07);border-radius:12px;padding:14px 10px"><span style="font-size:22px;font-style:italic;color:#2A1F0E;font-weight:700">${q.word}</span></div><div style="display:flex;flex-direction:column;gap:10px">${optHtml}</div>${_mChosen?`<div style="text-align:center;margin-top:14px;animation:fi .3s ease"><div style="font-size:13px;margin-bottom:10px;font-style:italic;color:${_mChosen===q.word?"#5a9e5a":"#e07070"}">${_mChosen===q.word?"✓ Correct!":"✗ It was: "+q.meaning}</div><button onclick="_mRound++;makeMatchQ()" style="background:#C4621A;color:#fff;border:none;border-radius:9px;padding:9px 22px;cursor:pointer;font-family:Georgia,serif;font-size:13px;font-weight:700">Next →</button></div>`:""}`;}
+function chooseMatch(word){if(_mChosen)return;_mChosen=word;drawMatch();}
+
+// ── Init ──────────────────────────────────────────────────
+loadMemorized();
+showView("home");
+</script>
+</body>
+</html>
